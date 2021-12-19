@@ -1,14 +1,16 @@
 #### Documentation in Russian
 
+> pip install [ProxyTVruAPI](https://pypi.org/project/ProxyTVruAPI/)
+
 **ProxyTVruAPI** - это API для сайта https://proxytv.ru/
 
 А именно для поиска IPTV каналов.
 
-## CLI
+## В терминале
 
 > python -m ProxyTVruAPI -h
 
-## Python
+## В коде
 
 ```python
 from ProxyTVruAPI import ProxyTVRobot
@@ -24,14 +26,6 @@ from ProxyTVruAPI import ProxyTVRobotThreading
 ProxyTVRobotThreading(forever=True)
 ```
 
-```python
-def __init__(self,
-             forever: bool = True,
-             cooldown: float = 0.,
-             search: Srch = SEARCH_ENGINE):
-    ...
-```
-
 От обоих этих классов можно наследоваться и доработать функционал.
 
 По умолчанию он будет пробигаться по всем плейлистам
@@ -41,6 +35,17 @@ def __init__(self,
 Если forever указан _True_ то будет делать это по кругу
 
 С задержков в _cooldown_ секунд.
+
+### Сигнатуры:
+
+```python
+class ProxyTVRobot:
+    def __init__(self,
+                 forever: bool = True,
+                 cooldown: float = 0.,
+                 search: Srch = SEARCH_ENGINE):
+        ...
+```
 
 ### Srch
 
