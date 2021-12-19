@@ -24,4 +24,4 @@ LIST_OF_STR = list[str]
 EXTINF_DATA = typing.TypeVar('EXTINF_DATA', list[tuple[str, str]], str)
 
 PROTOCOL = IP = typing.Type[str]
-PROXY = typing.Sequence[IP, PROTOCOL]
+PROXY = typing.Union[tuple[IP, PROTOCOL], list[IP, PROTOCOL]]
