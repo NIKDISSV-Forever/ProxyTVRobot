@@ -7,7 +7,8 @@ from .Types import EXTINF_DATA
 from .static import parse_extinf_format
 
 __all__ = (
-    'ProxyTVRobot', 'ProxyTVRobotThreading', 'Extinf', 'Srch', 'save_extinf', 'parse_extinf_format', 'SEARCH_ENGINE'
+    'ProxyTVRobot', 'ProxyTVRobotThreading', 'Extinf', 'Srch', 'save_extinf', 'parse_extinf_format', 'SEARCH_ENGINE',
+    'Proxy'
 )
 
 SEARCH_ENGINE = Srch()
@@ -16,15 +17,15 @@ SEARCH_ENGINE = Srch()
 class ProxyTVRobot:
     """A class describing a parser robot. Designed for inheritance."""
 
-    __slots__ = 'end_extinf', 'plist', 'plist_len', 'search_engine'
+    __slots__ = 'end_extinf', 'plist', 'PLIST_LEN', 'search_engine'
 
-    def __init__(self, forever: bool = True, cooldown: float = 0., search: Srch = SEARCH_ENGINE):
+    def __init__(self, forever: bool = True, cooldown: float = 0., search: Srch = None):
         """Runs the order of actions, if forever is true then it does it forever."""
-        self.search_engine = search
+        self.search_engine = search if search else SEARCH_ENGINE
         if forever:
             while True:
                 try:
-                    self._loop()
+                    self.loop()
                     sleep(cooldown)
                 except KeyboardInterrupt:
                     return
@@ -32,11 +33,11 @@ class ProxyTVRobot:
                     print('Error:', e)
         else:
             try:
-                self._loop()
+                self.loop()
             except KeyboardInterrupt:
                 return
 
-    def _loop(self):
+    def loop(self):
         self.on_start()
         self.during()
         self.on_end()
@@ -46,11 +47,11 @@ class ProxyTVRobot:
         """Initial actions."""
         self.end_extinf = Extinf()
         self.plist = self.search_engine.plist()
-        self.plist_len = len(self.plist)
+        self.PLIST_LEN = len(self.plist)
 
     def during(self):
         """Actions in the middle of the process."""
-        plist_len = self.plist_len
+        plist_len = self.PLIST_LEN
         for i, pl_name in enumerate(self.plist, 1):
             pl = self.search_engine.pl(pl_name)
             print(f'Pl: {pl_name} ({i}/{plist_len}) Channels: {len(pl)}')
@@ -77,11 +78,12 @@ class ProxyTVRobotThreading(ProxyTVRobot):
         """Method for adding a playlist to a shared Extinf object in multi-threaded mode"""
         pl = self.search_engine.pl(pl_name)
         self.end_extinf += pl
-        print(f'Pl: {pl_name} ({self.pl_i}/{self.plist_len}) Channels: {len(pl)}')
+        print(f'Pl: {pl_name} ({self.pl_i}/{self.PLIST_LEN}) Channels: {len(pl)}')
         self.pl_i += 1
 
     def on_start(self):
         super().on_start()
+        # noinspection PyAttributeOutsideInit
         self.pl_i = 1
 
     def during(self):

@@ -30,13 +30,13 @@ class Extinf:
             result = f'#EXTM3U list-autor="{self.author}"\n{result}'
         return result
 
-    def __len__(self) -> int:
-        """Will return the number of sources."""
-        return len(self.data)
-
     def __repr__(self) -> str:
         """Will return all the service information passed in str format."""
         return f'<{self.__class__.__name__}(Len={len(self)}; Author={repr(self.author)})>'
+
+    def __len__(self) -> int:
+        """Will return the number of sources."""
+        return len(self.data)
 
     def __iadd__(self, other):
         """Will append data from another instance to this one. (+=)"""
@@ -47,7 +47,8 @@ class Extinf:
         """Will return a new instance with the combined data from both. (+)"""
         return Extinf(self.data + other.data)
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
+        """True if there is at least one source."""
         return bool(self.data)
 
 

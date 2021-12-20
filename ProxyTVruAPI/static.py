@@ -19,9 +19,9 @@ def clear_html(text: typing.Any) -> str:
 
 
 def resp_to_str(resp: RESPONSE_OR_SUPPORT_STR) -> str:
-    return (resp.read().decode('utf-8') if isinstance(resp, HTTPResponse)
+    return (resp.read().decode('UTF-8') if isinstance(resp, HTTPResponse)
             else (resp if isinstance(resp, str)
-                  else (resp.decode('utf-8') if isinstance(resp, bytes)
+                  else (resp.decode('UTF-8') if isinstance(resp, bytes)
                         else (str(resp)))))
 
 
