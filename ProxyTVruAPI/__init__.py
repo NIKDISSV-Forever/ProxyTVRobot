@@ -22,6 +22,7 @@ class ProxyTVRobot:
     def __init__(self, forever: bool = True, cooldown: float = 0., search: Srch = None):
         """Runs the order of actions, if forever is true then it does it forever."""
         self.search_engine = search if search else SEARCH_ENGINE
+        self.__post_init__()
         if forever:
             while True:
                 try:
@@ -36,6 +37,10 @@ class ProxyTVRobot:
                 self.loop()
             except KeyboardInterrupt:
                 return
+
+    def __post_init__(self):
+        """Execute after initialization."""
+        pass
 
     def loop(self):
         self.on_start()

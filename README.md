@@ -6,11 +6,79 @@
 
 А именно для поиска IPTV каналов.
 
-# В терминале
+# CLI
 
 > python -m ProxyTVruAPI -h
 
-# В коде
+# Базовое использование:
+
+```python
+from ProxyTVruAPI import *
+
+USE_THREADS = True
+FOREVER = True
+COOLDOWN = 60.  # Минута.
+PROXY = Proxy(host='199.19.225.54:3128', protocol='https')  # Не обязательно
+
+if __name__ == '__main__':
+    Robot = ProxyTVRobotThreading if USE_THREADS else ProxyTVRobot
+    Robot(FOREVER, COOLDOWN,
+          Srch(PROXY)
+          )
+```
+
+## Определить своего бота парсера.
+
+```python
+"""
+Предположим,
+Вам захотелось переспотреть все детские и развлекательные каналы на свете.
+И вы хотите робота, который вам их соберёт.
+Наследуемся от ProxyTVRobot и творим!
+"""
+from ProxyTVruAPI import *
+
+
+class MyProxyTVRobot(ProxyTVRobot):
+    __slots__ = 'extinf', 'GROUPS'
+
+    def __post_init__(self):
+        """
+        Здесь определяют константы
+        Или выполняют то, что нужно выполнить только в начале
+        """
+        # Константа с группами... (Для удобного расширения)
+        self.GROUPS = 'Детские', 'Развлекательные'
+
+    def on_start(self):
+        """Всяческие подготовки, объявления переменных и т.п"""
+        self.extinf = Extinf()
+        # В self.extinf добавим все каналы из группы.
+
+    def during(self):
+        """
+        Самая важная часть. Обращение к поисковику.
+        Который любезно придоставит нам все UDP в группе 
+        'Детские' и 'Развлекательные'
+        """
+        for group in self.GROUPS:
+            # Воспользуемся self.search_engine созданом при инициализации.
+            found = self.search_engine.gr(group)
+            self.extinf += found  # Добавим его ко всем.
+            print(f'Gr: {group.upper()} | Channels: {len(found)}')
+
+    def on_end(self):
+        """Функция on_end от родителя сохраняла бы всё в 'all-channels.m3u8'
+        И пыталась бы загрузить это куда-то, используя метод self.upload()"""
+        save_extinf(self.extinf, 'look-at-leisure.m3u8')
+
+
+if __name__ == '__main__':
+    MyProxyTVRobot(cooldown=120.)  # Каждые две минуты обновлять плейлист.
+
+# Ещё одним примером кастомного робота является ProxyTVRobotThreading.
+# Если этого примера не хватило, взгляните на исходный код __init__.py
+```
 
 ### ```class ProxyTVRobot и ProxyTVRobotThreading```
 
@@ -126,68 +194,4 @@ def save_extinf(extinf: Extinf = Extinf(),
                 only_ip: bool = False) -> str:
     """Save m3u8 to the specified file from the class."""
     ...
-```
-
-# Базовое использование:
-
-```python
-from ProxyTVruAPI import *
-
-USE_THREADS = True
-FOREVER = True
-COOLDOWN = 60.  # Минута.
-PROXY = Proxy(host='199.19.225.54:3128', protocol='httpa')  # Не обязательно
-
-if __name__ == '__main__':
-    Robot = ProxyTVRobotThreading if USE_THREADS else ProxyTVRobot
-    Robot(FOREVER, COOLDOWN,
-          Srch(PROXY)
-          )
-```
-
-## Определить своего бота парсера.
-
-```python
-"""
-Предположим,
-Вам захотелось переспотреть все детские и развлекательные каналы на свете.
-И вы хотите робота, который вам их соберёт.
-Наследуемся от ProxyTVRobot и творим!
-"""
-from ProxyTVruAPI import *
-
-
-class MyProxyTVRobot(ProxyTVRobot):
-    __slots__ = ('extinf', 'GROUPS')
-
-    def on_start(self):
-        """Всяческие подготовки, объявления переменных и т.п"""
-        self.extinf = Extinf()
-        # В self.extinf добавим все каналы из группы.
-        self.GROUPS = 'Детские', 'Развлекательные'
-        # Константа с группами... (Для удобного разширения)
-
-    def during(self):
-        """
-        Самая важная часть. Обращение к поисковику.
-        Который любезно придоставит нам все UDP в группе 
-        'Детские' и 'Развлекательные'
-        """
-        for group in self.GROUPS:
-            # Воспользуемся self.search_engine созданом при инициализации.
-            found = self.search_engine.gr(group)
-            self.extinf += found  # Добавим его ко всем.
-            print(f'Gr: {group.upper()} | Channels: {len(found)}')
-
-    def on_end(self):
-        """Функция on_end от родителя сохраняла бы всё в 'all-channels.m3u8'
-        И пыталась бы загрузить это куда-то, используя метод self.upload()"""
-        save_extinf(self.extinf, 'look-at-leisure.m3u8')
-
-
-if __name__ == '__main__':
-    MyProxyTVRobot(cooldown=120.)  # Каждые две минуты обновлять плейлист.
-
-# Ещё одним примером кастомного робота является ProxyTVRobotThreading.
-# Если этого примера не хватило, взгляните на исходный код __init__.py
 ```
