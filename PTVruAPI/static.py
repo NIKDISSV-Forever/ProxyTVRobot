@@ -12,6 +12,7 @@ class RegularExpressions:
     EXTINF_RE: re.Pattern = re.compile(r'(#EXTINF:.+)\n(.+$)', re.M)
     HTML_TEG_RE: re.Pattern = re.compile(r'<.+?>')
     HTML_BR_RE: re.Pattern = re.compile(r'<br>', re.I)
+    CH_NAME_WITH_TVCH_ID: re.Pattern = re.compile(r'(.+)-(\d+)$')
 
 
 def clear_html(text: typing.Any) -> str:
@@ -25,7 +26,9 @@ def resp_to_str(resp: ResponseOrSupportsStr) -> str:
                         else (str(resp)))))
 
 
-def parse_extinf_format(extinf_line: str) -> ExtinfFormat:
+def parse_extinf_format(extinf_line: typing.Union[str, OneChannel]) -> ExtinfFormat:
+    if isinstance(extinf_line, tuple):
+        return extinf_line
     if extinf_line[:8].upper() == '#EXTINF:':
         extinf_line = extinf_line[8:]
     inf, name = extinf_line.split(',', 1)

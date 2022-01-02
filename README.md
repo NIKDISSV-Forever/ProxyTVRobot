@@ -32,11 +32,9 @@ if __name__ == '__main__':
 ```python
 from PTVruAPI import SearchEngine
 
-print(SearchEngine.ch('VIASAT HISTORY HD'
-                      )[{'tvch-id': '7171'}])
+print(SearchEngine.ch('VIASAT HISTORY HD')[{'tvch-id': '7171'}])
 # Тоже что и
-print(SearchEngine.ch('VIASAT HISTORY HD'
-                      )['VIASAT HISTORY HD-7171'])
+print(SearchEngine.ch('VIASAT HISTORY HD')['VIASAT HISTORY HD-7171'])
 ```
 
 ### Вывод:
@@ -201,13 +199,13 @@ class Extinf:
         ...
 
     def __init__(self,
-                 data: ExtinfData = None,
+                 data: data: typing.Union[ExtinfData, list[OneChannel]] = None,
                  author: str = 'NIKDISSV') -> None:
         ...
 
     def __getitem__(self, find: typing.Union[
-        str, ExtinfFormatInfDict, typing.Callable[[OneChannel], SupportsBool], OneChannel]
-                    ) -> typing.Union[list[OneChannel], list]:
+        SupportsStr, ExtinfFormatInfDict, typing.Callable[[OneChannel], SupportsBool], OneChannel]
+                    ) -> typing.Union[list[OneChannel]]:
         """
         For example:
         self = Srch().ch('VIASAT HISTORY HD')

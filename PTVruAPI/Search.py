@@ -1,4 +1,3 @@
-import typing
 from dataclasses import dataclass
 from urllib.request import urlopen, Request
 
@@ -6,6 +5,8 @@ from .ExtinfParse import *
 from .Types import *
 
 __all__ = 'Srch', 'Proxy'
+
+from .static import RegularExpressions
 
 
 @dataclass
@@ -16,6 +17,7 @@ class Proxy:
 
     def __bool__(self) -> bool:
         return bool(self.host and self.protocol)
+
 
 class Srch:
     """The main class for site search."""
@@ -37,8 +39,15 @@ class Srch:
     def plist(self) -> ListOfStr:
         return Parse(self.__udpxyaddr('plist')).plist()
 
-    def ch(self, query: SupportsStr) -> Extinf:
-        return Parse(self.__udpxyaddr(self.__mkq('ch', query))).extinf()
+    def ch(self, query: SupportsStr) -> typing.Union[Extinf, OneChannel]:
+        query = str(query)
+        tvch_id = RegularExpressions.CH_NAME_WITH_TVCH_ID.findall(query)
+        if tvch_id:
+            _query = query
+            query, tvch_id = tvch_id[0]
+        extinf = Parse(self.__udpxyaddr(self.__mkq('ch', query))).extinf()
+        # noinspection PyUnboundLocalVariable
+        return Extinf(extinf[_query]) if tvch_id else extinf
 
     def pl(self, query: SupportsStr) -> Extinf:
         return Parse(self.__udpxyaddr(self.__mkq('pl', query))).extinf()

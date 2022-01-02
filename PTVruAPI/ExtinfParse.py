@@ -3,36 +3,34 @@ from .static import *
 
 __all__ = 'Extinf', 'save_extinf', 'Parse', 'clear_html'
 
+_DQ = '"'
+_SQ = "'"
+
 
 class Extinf:
     """The class represents information from the m3u8 format."""
 
     __slots__ = '__data', 'author'
 
-    @property
-    def data(self) -> ExtinfData:
-        """Stores extinf data and source in raw form."""
-        return self.__data
-
-    def __init__(self, data: ExtinfData = None, author: str = 'NIKDISSV') -> None:
+    def __init__(self, data: typing.Union[ExtinfData, list[OneChannel]] = None, author: str = 'NIKDISSV') -> None:
         """Takes a list of sources and author. Stores them in an instance of the class."""
         if isinstance(data, (tuple, set)):
             data = list(data)
         if not isinstance(data, list):
             data = RegularExpressions.EXTINF_RE.findall(clear_html(data))
-        self.__data = data or []
+        self.__data: list[OneChannel] = [(parse_extinf_format(inf), url) for inf, url in data] or []
         self.author = author
 
     def __getitem__(self, find: typing.Union[
-        str, ExtinfFormatInfDict, typing.Callable[[OneChannel], SupportsBool], OneChannel]
-                    ) -> typing.Union[list[OneChannel], list]:
+        SupportsStr, ExtinfFormatInfDict, typing.Callable[[OneChannel], SupportsBool], OneChannel]
+                    ) -> typing.Union[list[OneChannel]]:
         """
         For example:
         self = Srch().ch('VIASAT HISTORY HD')
         | With a suitable name (For example self['VIASAT HISTORY HD-7171'])
             | self[lambda inf: inf[0][0].lower() == 'VIASAT HISTORY HD-7171']
-        | With matching information (For example self[{'tech-id': '7171'}])
-            | self[lambda inf: inf[0][1]['tech-id'] == '7171']
+        | With matching information (For example self[{'tvch-id': '7171'}])
+            | self[lambda inf: inf[0][1]['tvch-id'] == '7171']
         """
         if isinstance(find, dict):
             result = []
@@ -52,14 +50,14 @@ class Extinf:
         return [inf for inf in self if filter_function(inf)]
 
     def __iter__(self) -> typing.Iterator[OneChannel]:
-        return ((parse_extinf_format(inf), url) for inf, url in self.data)
+        return iter(self.__data)
 
     def __str__(self) -> str:
         """Converts the transmitted data to m3u8 format, add the author if any."""
-        result = '\n'.join('\n'.join(i) for i in sorted(set(self.data)))
-        if self.author:
-            result = f'#EXTM3U list-autor="{self.author}"\n{result}'
-        return result
+        return '{0}{1}'.format((f'#EXTM3U list-autor="{self.author}"\n' if self.author else ''
+                                ), '\n'.join(
+            f"""#EXTINF:{' '.join(f'{(f"{i}=" if isinstance(i, str) else "")}{repr(v).replace(_SQ, _DQ)}' for i, v in inf.items())},{name}\n{url}"""
+            for (name, inf), url in self.__data))
 
     def __repr__(self) -> str:
         """Will return all the service information passed in str format."""
@@ -67,20 +65,20 @@ class Extinf:
 
     def __len__(self) -> int:
         """Will return the number of sources."""
-        return len(self.data)
+        return len(self.__data)
 
     def __iadd__(self, other):
         """Will append data from another instance to this one. (+=)"""
-        self.__data += other.data
+        self.__data += other.__data
         return self
 
     def __add__(self, other):
         """Will return a new instance with the combined data from both. (+)"""
-        return Extinf(self.data + other.data)
+        return Extinf(self.__data + other.__data)
 
     def __bool__(self) -> bool:
         """True if there is at least one source."""
-        return bool(self.data)
+        return bool(self.__data)
 
 
 def save_extinf(extinf: Extinf = Extinf(), file: typing.Union[typing.TextIO, str] = None, only_ip: bool = False) -> str:
