@@ -3,11 +3,13 @@ from time import sleep
 
 from .ExtinfParse import *
 from .Search import *
-from .Types import EXTINF_DATA
+from .Types import ExtinfData
 from .static import parse_extinf_format
 
 __all__ = (
-    'ProxyTVRobot', 'ProxyTVRobotThreading', 'Extinf', 'Srch', 'save_extinf', 'parse_extinf_format', 'SearchEngine',
+    'ProxyTVRobot', 'ProxyTVRobotThreading',
+    'Extinf', 'Srch', 'SearchEngine',
+    'save_extinf', 'parse_extinf_format',
     'Proxy'
 )
 
@@ -101,7 +103,7 @@ class ProxyTVRobotThreading(ProxyTVRobot):
             th.join()
 
     @staticmethod
-    def sort_key(extinf: EXTINF_DATA):
+    def sort_key(extinf: ExtinfData):
         return parse_extinf_format(extinf[0])[1].get('group-title', '')
 
     def on_end(self):

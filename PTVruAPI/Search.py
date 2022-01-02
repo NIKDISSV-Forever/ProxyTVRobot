@@ -25,16 +25,16 @@ class Srch:
         """Accepts and stores a name (any) for further retrieval."""
         self.proxy = proxy
 
-    def __call__(self, query) -> Parse:
+    def __call__(self, query: UdpxyaddrQuery) -> Parse:
         return Parse(self.__udpxyaddr(query))
 
     def help(self) -> str:
         return clear_html(repr(self('?')))
 
-    def providers(self) -> LIST_OF_STR:
+    def providers(self) -> ListOfStr:
         return Parse(self.__udpxyaddr('provider')).providers()
 
-    def plist(self) -> LIST_OF_STR:
+    def plist(self) -> ListOfStr:
         return Parse(self.__udpxyaddr('plist')).plist()
 
     def ch(self, query: SupportsStr) -> Extinf:
@@ -50,17 +50,18 @@ class Srch:
     def __mkq(wt: SupportsStr, query: SupportsStr) -> str:
         return f'{wt}: {query}'
 
-    def __udpxyaddr(self, __srch: typing.Union[typing.AnyStr, SupportsStr]) -> HTTPResponse:
+    def __udpxyaddr(self,
+                    __srch: UdpxyaddrQuery) -> HTTPResponse:
         proxy = self.proxy
         protocol = proxy.protocol or 'https'
-        __req = Request(f'{protocol}://proxytv.ru/iptv/php/srch.php', b'udpxyaddr='
-                        + (__srch if isinstance(__srch, bytes)
-                           else (__srch.encode('utf-8') if isinstance(__srch, str)
-                                 else str(__srch).encode('utf-8'))),
-                        {'Referer': 'https://proxytv.ru/index.php'}, method='POST')
+        __request = Request(
+            f'{protocol}://proxytv.ru/iptv/php/srch.php',
+            b'udpxyaddr=' + (__srch if isinstance(__srch, (bytes, bytearray)) else (
+                __srch.encode('utf-8') if isinstance(__srch, str) else str(__srch).encode('utf-8'))),
+            {'Referer': 'https://proxytv.ru/index.php'}, method='POST')
         if proxy:
-            __req.set_proxy(proxy.host, protocol)
-        return urlopen(__req)
+            __request.set_proxy(proxy.host, protocol)
+        return urlopen(__request)
 
     @property
     def proxy(self) -> Proxy:

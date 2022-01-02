@@ -1,6 +1,6 @@
 #### Documentation in Russian
 
-> pip install [ProxyTVruAPI](https://pypi.org/project/ProxyTVruAPI/)
+> pip install [PTVruAPI](https://pypi.org/project/PTVruAPI/)
 
 **ProxyTVruAPI** - это API для сайта https://proxytv.ru/
 
@@ -13,7 +13,7 @@
 # Базовое использование:
 
 ```python
-from ProxyTVruAPI import *
+from PTVruAPI import *
 
 USE_THREADS = True
 FOREVER = True
@@ -30,7 +30,7 @@ if __name__ == '__main__':
 # Простой поиск канала
 
 ```python
-from ProxyTVruAPI import SearchEngine
+from PTVruAPI import SearchEngine
 
 print(SearchEngine.ch('VIASAT HISTORY HD'
                       )[{'tvch-id': '7171'}])
@@ -61,7 +61,7 @@ list[tuple[tuple[str, dict[str | int, Any]], str]]
 И вы хотите робота, который вам их соберёт.
 Наследуемся от ProxyTVRobot и творим!
 """
-from ProxyTVruAPI import *
+from PTVruAPI import *
 
 
 class MyProxyTVRobot(ProxyTVRobot):
@@ -174,13 +174,13 @@ class Srch:
 
     def __init__(self, proxy: Proxy = Proxy()) -> None: ...
 
-    def __call__(self, query) -> Extinf: ...
+    def __call__(self, query: UdpxyaddrQuery) -> Parse: ...
 
     def help(self) -> str: ...
 
-    def providers(self) -> LIST_OF_STR: ...
+    def providers(self) -> ListOfStr: ...
 
-    def plist(self) -> LIST_OF_STR: ...
+    def plist(self) -> ListOfStr: ...
 
     def ch(self, query: SupportsStr) -> Extinf: ...
 
@@ -195,15 +195,20 @@ class Srch:
 class Extinf:
     """The class represents information from the m3u8 format."""
 
+    @property
+    def data(self) -> ExtinfData:
+        """Stores extinf data and source in raw form."""
+        ...
+
     def __init__(self,
-                 data: EXTINF_DATA = None,
+                 data: ExtinfData = None,
                  author: str = 'NIKDISSV') -> None:
         ...
 
     def __getitem__(self, find: typing.Union[str, ExtinfFormatInfDict]) -> Optional[list[OneChannel]]:
         """
         Will find an item with a suitable name (For example self['VIASAT HISTORY HD-7171'])
-        Or with matching information (For example self[{'tech-id': '7171'}])
+        Or with matching information (For example self[{'tvch-id': '7171'}])
         """
         ...
 

@@ -18,7 +18,7 @@ def clear_html(text: typing.Any) -> str:
     return RegularExpressions.HTML_TEG_RE.sub('', RegularExpressions.HTML_BR_RE.sub('\n', resp_to_str(text)))
 
 
-def resp_to_str(resp: RESPONSE_OR_SUPPORT_STR) -> str:
+def resp_to_str(resp: ResponseOrSupportsStr) -> str:
     return (resp.read().decode('UTF-8') if isinstance(resp, HTTPResponse)
             else (resp if isinstance(resp, str)
                   else (resp.decode('UTF-8') if isinstance(resp, bytes)

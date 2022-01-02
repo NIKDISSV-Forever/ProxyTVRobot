@@ -4,9 +4,9 @@ with open('README.md', encoding='UTF-8') as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="ProxyTVruAPI",
+    name="PTVruAPI",
 
-    version="0.0.4",
+    version="0.0.5",
 
     author="Nikita (NIKDISSV)",
     author_email="nikdissv.forever@protonmail.com",

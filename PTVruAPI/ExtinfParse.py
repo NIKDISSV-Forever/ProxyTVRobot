@@ -10,11 +10,11 @@ class Extinf:
     __slots__ = '__data', 'author'
 
     @property
-    def data(self) -> EXTINF_DATA:
+    def data(self) -> ExtinfData:
         """Stores extinf data and source in raw form."""
         return self.__data
 
-    def __init__(self, data: EXTINF_DATA = None, author: str = 'NIKDISSV') -> None:
+    def __init__(self, data: ExtinfData = None, author: str = 'NIKDISSV') -> None:
         """Takes a list of sources and author. Stores them in an instance of the class."""
         if isinstance(data, (tuple, set)):
             data = list(data)
@@ -98,8 +98,8 @@ class Parse:
     def extinf(self) -> Extinf:
         return Extinf(self.__resp_str)
 
-    def plist(self) -> LIST_OF_STR:
+    def plist(self) -> ListOfStr:
         return RegularExpressions.PLIST_RE.findall(self.__resp_str)
 
-    def providers(self) -> LIST_OF_STR:
+    def providers(self) -> ListOfStr:
         return RegularExpressions.PROVIDER_RE.findall(self.__resp_str)
