@@ -116,8 +116,8 @@ class ProxyTVRobot:
 
     def __init__(self,
                  forever: bool = True,
-                 cooldown: float = 0.,
-                 search: Srch = None):
+                 cooldown: typing.SupportsFloat = 0., search: Srch = None,
+                 except_types: typing.Union[typing.Iterable[BaseException], BaseException] = (Exception,)):
         """Runs the order of actions, if forever is true then it does it forever."""
         ...
 
@@ -199,7 +199,7 @@ class Extinf:
         ...
 
     def __init__(self,
-                 data: data: typing.Union[ExtinfData, list[OneChannel]] = None,
+                 data: typing.Union[ExtinfData, list[OneChannel]] = None,
                  author: str = 'NIKDISSV') -> None:
         ...
 

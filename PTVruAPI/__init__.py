@@ -1,10 +1,10 @@
 from threading import Thread
 from time import sleep
 
-from .ExtinfParse import *
-from .Search import *
-from .Types import ExtinfData
-from .static import parse_extinf_format
+from PTVruAPI.ExtinfParse import *
+from PTVruAPI.Search import *
+from PTVruAPI.Types import *
+from PTVruAPI.static import parse_extinf_format
 
 __all__ = (
     'ProxyTVRobot', 'ProxyTVRobotThreading',
@@ -21,19 +21,28 @@ class ProxyTVRobot:
 
     __slots__ = 'end_extinf', 'plist', 'PLIST_LEN', 'search_engine'
 
-    def __init__(self, forever: bool = True, cooldown: float = 0., search: Srch = None):
+    def __init__(self, forever: bool = True, cooldown: typing.SupportsFloat = 0., search: Srch = None,
+                 except_types: typing.Union[typing.Iterable[BaseException], BaseException] = (Exception,)):
         """Runs the order of actions, if forever is true then it does it forever."""
         self.search_engine = search if search else SearchEngine
         self.__post_init__()
+        if isinstance(except_types, typing.Iterable):
+            if not isinstance(except_types, tuple):
+                except_types = tuple()
+        elif issubclass(except_types, BaseException):
+            except_types = except_types,
+        no_keyboard_interrupt_except = KeyboardInterrupt not in except_types
+        if no_keyboard_interrupt_except:
+            except_types += KeyboardInterrupt,
         if forever:
             while True:
                 try:
                     self.loop()
                     sleep(cooldown)
-                except KeyboardInterrupt:
-                    return
-                except Exception as e:
-                    print('Error:', e)
+                except except_types as e:
+                    if no_keyboard_interrupt_except and isinstance(e, KeyboardInterrupt):
+                        return
+                    print(f'Error: {e}')
         else:
             try:
                 self.loop()
@@ -103,10 +112,13 @@ class ProxyTVRobotThreading(ProxyTVRobot):
             th.join()
 
     @staticmethod
-    def sort_key(extinf: ExtinfData):
-        return parse_extinf_format(extinf[0])[1].get('group-title', '')
+    def sort_key(extinf: OneChannel):
+        return extinf[0][1].get('group-title', '')
 
     def on_end(self):
         """Sort by self.sort_key function and save."""
         self.end_extinf.data.sort(key=self.sort_key)
         super().on_end()
+
+
+ProxyTVRobot()

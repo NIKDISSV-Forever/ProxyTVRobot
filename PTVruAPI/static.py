@@ -1,6 +1,6 @@
 import re
 
-from .Types import *
+from PTVruAPI.Types import *
 
 __all__ = 'RegularExpressions', 'clear_html', 'resp_to_str', 'parse_extinf_format'
 

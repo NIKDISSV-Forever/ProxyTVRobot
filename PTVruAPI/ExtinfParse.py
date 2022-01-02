@@ -1,5 +1,5 @@
-from .Types import *
-from .static import *
+from PTVruAPI.Types import *
+from PTVruAPI.static import *
 
 __all__ = 'Extinf', 'save_extinf', 'Parse', 'clear_html'
 
@@ -10,7 +10,7 @@ _SQ = "'"
 class Extinf:
     """The class represents information from the m3u8 format."""
 
-    __slots__ = '__data', 'author'
+    __slots__ = 'data', 'author'
 
     def __init__(self, data: typing.Union[ExtinfData, list[OneChannel]] = None, author: str = 'NIKDISSV') -> None:
         """Takes a list of sources and author. Stores them in an instance of the class."""
@@ -18,7 +18,7 @@ class Extinf:
             data = list(data)
         if not isinstance(data, list):
             data = RegularExpressions.EXTINF_RE.findall(clear_html(data))
-        self.__data: list[OneChannel] = [(parse_extinf_format(inf), url) for inf, url in data] or []
+        self.data: list[OneChannel] = [(parse_extinf_format(inf), url) for inf, url in data] or []
         self.author = author
 
     def __getitem__(self, find: typing.Union[
@@ -36,9 +36,12 @@ class Extinf:
             result = []
             for inf in self:
                 inf_dict = inf[0][1]
+                add = False
                 for k, v in find.items():
-                    if k in inf_dict and inf_dict[k] == v:
-                        result.append(inf)
+                    if k in inf_dict:
+                        add = inf_dict[k] == v
+                if add:
+                    result.append(inf)
             return result
         elif isinstance(find, str):
             find = find.lower()
@@ -50,14 +53,14 @@ class Extinf:
         return [inf for inf in self if filter_function(inf)]
 
     def __iter__(self) -> typing.Iterator[OneChannel]:
-        return iter(self.__data)
+        return iter(self.data)
 
     def __str__(self) -> str:
         """Converts the transmitted data to m3u8 format, add the author if any."""
         return '{0}{1}'.format((f'#EXTM3U list-autor="{self.author}"\n' if self.author else ''
                                 ), '\n'.join(
             f"""#EXTINF:{' '.join(f'{(f"{i}=" if isinstance(i, str) else "")}{repr(v).replace(_SQ, _DQ)}' for i, v in inf.items())},{name}\n{url}"""
-            for (name, inf), url in self.__data))
+            for (name, inf), url in self.data))
 
     def __repr__(self) -> str:
         """Will return all the service information passed in str format."""
@@ -65,20 +68,20 @@ class Extinf:
 
     def __len__(self) -> int:
         """Will return the number of sources."""
-        return len(self.__data)
+        return len(self.data)
 
     def __iadd__(self, other):
         """Will append data from another instance to this one. (+=)"""
-        self.__data += other.__data
+        self.data += other.data
         return self
 
     def __add__(self, other):
         """Will return a new instance with the combined data from both. (+)"""
-        return Extinf(self.__data + other.__data)
+        return Extinf(self.data + other.data)
 
     def __bool__(self) -> bool:
         """True if there is at least one source."""
-        return bool(self.__data)
+        return bool(self.data)
 
 
 def save_extinf(extinf: Extinf = Extinf(), file: typing.Union[typing.TextIO, str] = None, only_ip: bool = False) -> str:

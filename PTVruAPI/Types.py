@@ -39,3 +39,5 @@ ExtinfData = typing.TypeVar('ExtinfData', list[tuple[str, str]], str)
 ExtinfFormatInfDict = dict[typing.Union[str, int], typing.Any]
 ExtinfFormat = tuple[str, ExtinfFormatInfDict]
 OneChannel = tuple[ExtinfFormat, str]
+
+BaseExceptionType = type(BaseException)

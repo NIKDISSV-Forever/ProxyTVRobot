@@ -1,6 +1,6 @@
 if __name__ == '__main__':
     from argparse import ArgumentParser, Namespace
-    from . import Srch, SearchEngine, Proxy
+    from PTVruAPI import Srch, SearchEngine, Proxy
 
     arg_parser = ArgumentParser()
     arg_parser.add_argument('-f', '--forever', action='store_true')
@@ -9,8 +9,8 @@ if __name__ == '__main__':
     arg_parser.add_argument('-x', '--proxy', type=str, help='Proxy <protocol>://<ip>')
     args: Namespace = arg_parser.parse_args()
     if args.threading:
-        from . import ProxyTVRobotThreading as Robot
+        from PTVruAPI import ProxyTVRobotThreading as Robot
     else:
-        from . import ProxyTVRobot as Robot
+        from PTVruAPI import ProxyTVRobot as Robot
     proxy = args.proxy
     Robot(args.forever, args.cooldown, Srch(Proxy(*proxy.split('://', 1)[::-1])) if proxy else SearchEngine)

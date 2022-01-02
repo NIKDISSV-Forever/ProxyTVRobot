@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from urllib.request import urlopen, Request
 
-from .ExtinfParse import *
-from .Types import *
+from PTVruAPI.ExtinfParse import *
+from PTVruAPI.Types import *
 
 __all__ = 'Srch', 'Proxy'
 
