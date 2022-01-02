@@ -23,24 +23,33 @@ class Extinf:
         self.__data = data or []
         self.author = author
 
-    def __getitem__(self, find: typing.Union[str, ExtinfFormatInfDict]) -> typing.Union[list[OneChannel], list]:
+    def __getitem__(self, find: typing.Union[
+        str, ExtinfFormatInfDict, typing.Callable[[OneChannel], SupportsBool], OneChannel]
+                    ) -> typing.Union[list[OneChannel], list]:
         """
-        Will find an item with a suitable name (For example self['VIASAT HISTORY HD-7171'])
-        Or with matching information (For example self[{'tech-id': '7171'}])
+        For example:
+        self = Srch().ch('VIASAT HISTORY HD')
+        | With a suitable name (For example self['VIASAT HISTORY HD-7171'])
+            | self[lambda inf: inf[0][0].lower() == 'VIASAT HISTORY HD-7171']
+        | With matching information (For example self[{'tech-id': '7171'}])
+            | self[lambda inf: inf[0][1]['tech-id'] == '7171']
         """
-        result = []
         if isinstance(find, dict):
+            result = []
             for inf in self:
                 inf_dict = inf[0][1]
                 for k, v in find.items():
                     if k in inf_dict and inf_dict[k] == v:
                         result.append(inf)
+            return result
         elif isinstance(find, str):
             find = find.lower()
-            result = [inf for inf in self if inf[0][0].lower() == find]
+            filter_function = lambda inf: inf[0][0].lower() == find
+        elif callable(find):
+            filter_function = find
         else:
-            result = [inf for inf in self if inf == find]
-        return result
+            filter_function = lambda inf: inf == find
+        return [inf for inf in self if filter_function(inf)]
 
     def __iter__(self) -> typing.Iterator[OneChannel]:
         return ((parse_extinf_format(inf), url) for inf, url in self.data)

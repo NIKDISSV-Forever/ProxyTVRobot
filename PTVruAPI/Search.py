@@ -1,3 +1,4 @@
+import typing
 from dataclasses import dataclass
 from urllib.request import urlopen, Request
 
@@ -15,7 +16,6 @@ class Proxy:
 
     def __bool__(self) -> bool:
         return bool(self.host and self.protocol)
-
 
 class Srch:
     """The main class for site search."""

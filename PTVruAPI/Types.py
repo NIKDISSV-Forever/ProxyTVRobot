@@ -6,7 +6,8 @@ from http.client import HTTPResponse
 
 __all__ = (
     'typing', 'HTTPResponse',
-    'ResponseOrSupportsStr', 'ListOfStr', 'SupportsStr',
+    'ResponseOrSupportsStr', 'ListOfStr',
+    'SupportsStr', 'SupportsBool',
     'UdpxyaddrQuery', 'ExtinfData',
     'ExtinfFormatInfDict', 'ExtinfFormat', 'OneChannel',
 )
@@ -18,6 +19,15 @@ class SupportsStr(typing.Protocol):
 
     @abstractmethod
     def __str__(self) -> str:
+        ...
+
+
+@typing.runtime_checkable
+class SupportsBool(typing.Protocol):
+    __slots__ = ()
+
+    @abstractmethod
+    def __bool__(self) -> bool:
         ...
 
 

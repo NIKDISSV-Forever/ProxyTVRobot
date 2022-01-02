@@ -205,26 +205,39 @@ class Extinf:
                  author: str = 'NIKDISSV') -> None:
         ...
 
-    def __getitem__(self, find: typing.Union[str, ExtinfFormatInfDict]) -> Optional[list[OneChannel]]:
+    def __getitem__(self, find: typing.Union[
+        str, ExtinfFormatInfDict, typing.Callable[[OneChannel], SupportsBool], OneChannel]
+                    ) -> typing.Union[list[OneChannel], list]:
         """
-        Will find an item with a suitable name (For example self['VIASAT HISTORY HD-7171'])
-        Or with matching information (For example self[{'tvch-id': '7171'}])
+        For example:
+        self = Srch().ch('VIASAT HISTORY HD')
+        | With a suitable name (For example self['VIASAT HISTORY HD-7171'])
+            | self[lambda inf: inf[0][0].lower() == 'VIASAT HISTORY HD-7171']
+        | With matching information (For example self[{'tech-id': '7171'}])
+            | self[lambda inf: inf[0][1]['tech-id'] == '7171']
         """
         ...
 
-    def __iter__(self) -> Iterator[OneChannel]: ...
 
-    def __str__(self) -> str: ...
+def __iter__(self) -> Iterator[OneChannel]: ...
 
-    def __repr__(self) -> str: ...
 
-    def __len__(self) -> int: ...  # Количество источников.
+def __str__(self) -> str: ...
 
-    def __iadd__(self, other): ...  # +=
 
-    def __add__(self, other): ...  # +
+def __repr__(self) -> str: ...
 
-    def __bool__(self) -> bool: ...
+
+def __len__(self) -> int: ...  # Количество источников.
+
+
+def __iadd__(self, other): ...  # +=
+
+
+def __add__(self, other): ...  # +
+
+
+def __bool__(self) -> bool: ...
 
 
 def save_extinf(extinf: Extinf = Extinf(),
