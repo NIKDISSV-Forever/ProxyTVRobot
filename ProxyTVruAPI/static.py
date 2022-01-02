@@ -25,7 +25,7 @@ def resp_to_str(resp: RESPONSE_OR_SUPPORT_STR) -> str:
                         else (str(resp)))))
 
 
-def parse_extinf_format(extinf_line: str) -> tuple[str, dict[typing.Any, typing.Any]]:  # Universally
+def parse_extinf_format(extinf_line: str) -> ExtinfFormat:
     if extinf_line[:8].upper() == '#EXTINF:':
         extinf_line = extinf_line[8:]
     inf, name = extinf_line.split(',', 1)
@@ -37,9 +37,8 @@ def parse_extinf_format(extinf_line: str) -> tuple[str, dict[typing.Any, typing.
         else:
             i = counter
             counter += 1
-        # noinspection PyBroadException
         try:
-            v = eval(v, {}, {})
+            v = eval(v)
         except Exception:
             pass
         result[i] = v

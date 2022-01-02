@@ -6,7 +6,7 @@ with open('README.md', encoding='UTF-8') as fh:
 setuptools.setup(
     name="ProxyTVruAPI",
 
-    version="0.0.3",
+    version="0.0.4",
 
     author="Nikita (NIKDISSV)",
     author_email="nikdissv.forever@protonmail.com",

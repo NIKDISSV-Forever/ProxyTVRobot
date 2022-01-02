@@ -27,6 +27,31 @@ if __name__ == '__main__':
           )
 ```
 
+# Простой поиск канала
+
+```python
+from ProxyTVruAPI import SearchEngine
+
+print(SearchEngine.ch('VIASAT HISTORY HD'
+                      )[{'tvch-id': '7171'}])
+# Тоже что и
+print(SearchEngine.ch('VIASAT HISTORY HD'
+                      )['VIASAT HISTORY HD-7171'])
+```
+
+### Вывод:
+
+```python
+# Тип:
+list[tuple[tuple[str, dict[str | int, Any]], str]]
+
+[(
+    ('VIASAT HISTORY HD-7171',
+     {0: -1, 'tvch-id': '7171', 'group-title': 'ПОЗНАВАТЕЛЬНЫЕ'}),
+    'http://...:.../udp/...:...'
+)]
+```
+
 ## Определить своего бота парсера.
 
 ```python
@@ -83,7 +108,7 @@ if __name__ == '__main__':
 ### ```class ProxyTVRobot и ProxyTVRobotThreading```
 
 ```python
-SEARCH_ENGINE = Srch()
+SearchEngine = Srch()
 
 
 class ProxyTVRobot:
@@ -130,8 +155,7 @@ class ProxyTVRobot:
         pass
 
 
-class ProxyTVRobotThreading(ProxyTVRobot):
-    ...
+class ProxyTVRobotThreading(ProxyTVRobot): ...
 ```
 
 ### ```class Srch и Proxy```
@@ -175,6 +199,15 @@ class Extinf:
                  data: EXTINF_DATA = None,
                  author: str = 'NIKDISSV') -> None:
         ...
+
+    def __getitem__(self, find: typing.Union[str, ExtinfFormatInfDict]) -> Optional[list[OneChannel]]:
+        """
+        Will find an item with a suitable name (For example self['VIASAT HISTORY HD-7171'])
+        Or with matching information (For example self[{'tech-id': '7171'}])
+        """
+        ...
+
+    def __iter__(self) -> Iterator[OneChannel]: ...
 
     def __str__(self) -> str: ...
 

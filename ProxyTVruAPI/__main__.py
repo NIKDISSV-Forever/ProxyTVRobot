@@ -1,6 +1,6 @@
 if __name__ == '__main__':
     from argparse import ArgumentParser, Namespace
-    from . import Srch, SEARCH_ENGINE, Proxy
+    from . import Srch, SearchEngine, Proxy
 
     arg_parser = ArgumentParser()
     arg_parser.add_argument('-f', '--forever', action='store_true')
@@ -13,4 +13,4 @@ if __name__ == '__main__':
     else:
         from . import ProxyTVRobot as Robot
     proxy = args.proxy
-    Robot(args.forever, args.cooldown, Srch(Proxy(*proxy.split('://', 1)[::-1])) if proxy else SEARCH_ENGINE)
+    Robot(args.forever, args.cooldown, Srch(Proxy(*proxy.split('://', 1)[::-1])) if proxy else SearchEngine)

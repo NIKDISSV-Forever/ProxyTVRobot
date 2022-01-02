@@ -1,3 +1,5 @@
+from typing import Iterator, Optional
+
 from .Types import *
 from .static import *
 
@@ -22,6 +24,28 @@ class Extinf:
             data = RegularExpressions.EXTINF_RE.findall(clear_html(data))
         self.__data = data or []
         self.author = author
+
+    def __getitem__(self, find: typing.Union[str, ExtinfFormatInfDict]) -> Optional[list[OneChannel]]:
+        """
+        Will find an item with a suitable name (For example self['VIASAT HISTORY HD-7171'])
+        Or with matching information (For example self[{'tech-id': '7171'}])
+        """
+        result = []
+        if isinstance(find, dict):
+            for inf in self:
+                inf_dict = inf[0][1]
+                for k, v in find.items():
+                    if k in inf_dict and inf_dict[k] == v:
+                        result.append(inf)
+        elif isinstance(find, str):
+            find = find.lower()
+            result = [inf for inf in self if inf[0][0].lower() == find]
+        else:
+            result = [inf for inf in self if inf == find]
+        return result
+
+    def __iter__(self) -> Iterator[OneChannel]:
+        return ((parse_extinf_format(inf), url) for inf, url in self.data)
 
     def __str__(self) -> str:
         """Converts the transmitted data to m3u8 format, add the author if any."""

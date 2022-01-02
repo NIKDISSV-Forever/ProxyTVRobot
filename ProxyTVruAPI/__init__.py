@@ -7,11 +7,11 @@ from .Types import EXTINF_DATA
 from .static import parse_extinf_format
 
 __all__ = (
-    'ProxyTVRobot', 'ProxyTVRobotThreading', 'Extinf', 'Srch', 'save_extinf', 'parse_extinf_format', 'SEARCH_ENGINE',
+    'ProxyTVRobot', 'ProxyTVRobotThreading', 'Extinf', 'Srch', 'save_extinf', 'parse_extinf_format', 'SearchEngine',
     'Proxy'
 )
 
-SEARCH_ENGINE = Srch()
+SearchEngine = Srch()
 
 
 class ProxyTVRobot:
@@ -21,7 +21,7 @@ class ProxyTVRobot:
 
     def __init__(self, forever: bool = True, cooldown: float = 0., search: Srch = None):
         """Runs the order of actions, if forever is true then it does it forever."""
-        self.search_engine = search if search else SEARCH_ENGINE
+        self.search_engine = search if search else SearchEngine
         self.__post_init__()
         if forever:
             while True:

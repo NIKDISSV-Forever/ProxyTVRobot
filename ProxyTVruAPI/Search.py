@@ -52,9 +52,7 @@ class Srch:
 
     def __udpxyaddr(self, __srch: typing.Union[typing.AnyStr, SupportsStr]) -> HTTPResponse:
         proxy = self.proxy
-        protocol = proxy.protocol
-        if not protocol:
-            protocol = 'https'
+        protocol = proxy.protocol or 'https'
         __req = Request(f'{protocol}://proxytv.ru/iptv/php/srch.php', b'udpxyaddr='
                         + (__srch if isinstance(__srch, bytes)
                            else (__srch.encode('utf-8') if isinstance(__srch, str)
