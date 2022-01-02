@@ -1,4 +1,3 @@
-
 from .Types import *
 from .static import *
 
@@ -24,7 +23,7 @@ class Extinf:
         self.__data = data or []
         self.author = author
 
-    def __getitem__(self, find: typing.Union[str, ExtinfFormatInfDict]) -> typing.Optional[list[OneChannel]]:
+    def __getitem__(self, find: typing.Union[str, ExtinfFormatInfDict]) -> typing.Union[list[OneChannel], list]:
         """
         Will find an item with a suitable name (For example self['VIASAT HISTORY HD-7171'])
         Or with matching information (For example self[{'tech-id': '7171'}])
