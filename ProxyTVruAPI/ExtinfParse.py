@@ -1,4 +1,3 @@
-from typing import Iterator, Optional
 
 from .Types import *
 from .static import *
@@ -25,7 +24,7 @@ class Extinf:
         self.__data = data or []
         self.author = author
 
-    def __getitem__(self, find: typing.Union[str, ExtinfFormatInfDict]) -> Optional[list[OneChannel]]:
+    def __getitem__(self, find: typing.Union[str, ExtinfFormatInfDict]) -> typing.Optional[list[OneChannel]]:
         """
         Will find an item with a suitable name (For example self['VIASAT HISTORY HD-7171'])
         Or with matching information (For example self[{'tech-id': '7171'}])
@@ -44,7 +43,7 @@ class Extinf:
             result = [inf for inf in self if inf == find]
         return result
 
-    def __iter__(self) -> Iterator[OneChannel]:
+    def __iter__(self) -> typing.Iterator[OneChannel]:
         return ((parse_extinf_format(inf), url) for inf, url in self.data)
 
     def __str__(self) -> str:
