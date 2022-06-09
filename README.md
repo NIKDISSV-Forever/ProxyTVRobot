@@ -65,7 +65,7 @@ from PTVruAPI import *
 class MyProxyTVRobot(ProxyTVRobot):
     __slots__ = 'extinf', 'GROUPS'
 
-    def __post_init__(self):
+    def post_init(self):
         """
         Здесь определяют константы
         Или выполняют то, что нужно выполнить только в начале

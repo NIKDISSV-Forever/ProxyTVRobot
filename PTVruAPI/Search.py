@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from urllib.request import urlopen, Request
 
@@ -21,7 +23,7 @@ class Proxy:
 
 class Srch:
     """The main class for site search."""
-    __slots__ = '__proxy',
+    __slots__ = ('__proxy',)
 
     def __init__(self, proxy: Proxy = Proxy()):
         """Accepts and stores a name (any) for further retrieval."""
@@ -39,7 +41,7 @@ class Srch:
     def plist(self) -> ListOfStr:
         return Parse(self.__udpxyaddr('plist')).plist()
 
-    def ch(self, query: SupportsStr) -> typing.Union[Extinf, OneChannel]:
+    def ch(self, query: SupportsStr) -> Extinf | OneChannel:
         query = str(query)
         tvch_id = RegularExpressions.CH_NAME_WITH_TVCH_ID.findall(query)
         if tvch_id:
@@ -66,9 +68,9 @@ class Srch:
         __request = Request(
             f'{protocol}://proxytv.ru/iptv/php/srch.php',
             b'udpxyaddr=' + (__srch if isinstance(__srch, (bytes, bytearray)) else (
-                __srch.encode('utf-8') if isinstance(__srch, str) else str(__srch).encode('utf-8'))),
+                __srch.encode('UTF-8') if isinstance(__srch, str) else str(__srch).encode('utf-8'))),
             {'Referer': 'https://proxytv.ru/index.php'}, method='POST')
-        if proxy:
+        if self.proxy:
             __request.set_proxy(proxy.host, protocol)
         return urlopen(__request)
 

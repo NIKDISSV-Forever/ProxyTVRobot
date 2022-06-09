@@ -1,18 +1,24 @@
+from __future__ import annotations
+
 from PTVruAPI.Types import *
 from PTVruAPI.static import *
 
 __all__ = 'Extinf', 'save_extinf', 'Parse', 'clear_html'
 
-_DQ = '"'
-_SQ = "'"
+
+def repl_double_quotes(v) -> str:
+    _repr = repr(v)
+    if _repr[0] == _repr[-1] == '"':
+        return _repr
+    return f'"{_repr[1:-1]}"'
 
 
 class Extinf:
     """The class represents information from the m3u8 format."""
 
-    __slots__ = 'data', 'author'
+    __slots__ = ('data', 'author')
 
-    def __init__(self, data: typing.Union[ExtinfData, list[OneChannel]] = None, author: str = 'NIKDISSV') -> None:
+    def __init__(self, data: ExtinfData | list[OneChannel] = None, author: str = 'NIKDISSV') -> None:
         """Takes a list of sources and author. Stores them in an instance of the class."""
         if isinstance(data, (tuple, set)):
             data = list(data)
@@ -21,9 +27,9 @@ class Extinf:
         self.data: list[OneChannel] = [(parse_extinf_format(inf), url) for inf, url in data] or []
         self.author = author
 
-    def __getitem__(self, find: typing.Union[
-        SupportsStr, ExtinfFormatInfDict, typing.Callable[[OneChannel], SupportsBool], OneChannel]
-                    ) -> typing.Union[list[OneChannel]]:
+    def __getitem__(self,
+                    find: SupportsStr | ExtinfFormatInfDict | typing.Callable[[OneChannel] | SupportsBool] | OneChannel
+                    ) -> list[OneChannel]:
         """
         For example:
         self = Srch().ch('VIASAT HISTORY HD')
@@ -45,11 +51,14 @@ class Extinf:
             return result
         elif isinstance(find, str):
             find = find.lower()
-            filter_function = lambda inf: inf[0][0].lower() == find
+
+            def filter_function(info):
+                return info[0][0].lower() == find
         elif callable(find):
             filter_function = find
         else:
-            filter_function = lambda inf: inf == find
+            def filter_function(info):
+                return info == find
         return [inf for inf in self if filter_function(inf)]
 
     def __iter__(self) -> typing.Iterator[OneChannel]:
@@ -59,7 +68,8 @@ class Extinf:
         """Converts the transmitted data to m3u8 format, add the author if any."""
         return '{0}{1}'.format((f'#EXTM3U list-autor="{self.author}"\n' if self.author else ''
                                 ), '\n'.join(
-            f"""#EXTINF:{' '.join(f'{(f"{i}=" if isinstance(i, str) else "")}{repr(v).replace(_SQ, _DQ)}' for i, v in inf.items())},{name}\n{url}"""
+            f"""#EXTINF:{' '.join(f'{(f"{i}=" if isinstance(i, str) else "")}{repl_double_quotes(v)}' for i, v in
+                                  inf.items())},{name}\n{url}"""
             for (name, inf), url in self.data))
 
     def __repr__(self) -> str:
@@ -72,32 +82,31 @@ class Extinf:
 
     def __iadd__(self, other):
         """Will append data from another instance to this one. (+=)"""
-        self.data += other.data
+        self.data += other.data if hasattr(other, 'data') else other
         return self
 
     def __add__(self, other):
         """Will return a new instance with the combined data from both. (+)"""
-        return Extinf(self.data + other.data)
+        return Extinf(self.data + (other.data if hasattr(other, 'data') else other))
 
     def __bool__(self) -> bool:
         """True if there is at least one source."""
         return bool(self.data)
 
 
-def save_extinf(extinf: Extinf = Extinf(), file: typing.Union[typing.TextIO, str] = None, only_ip: bool = False) -> str:
-    """Save m3u8 to the specified file from the class."""
-    data_m3u8 = '\n'.join(ip[1] for ip in extinf.data) if only_ip else str(extinf)
+def save_extinf(extinf: Extinf = Extinf(), file: typing.TextIO | str = None, only_ip: bool = False) -> str:
+    """Save m3u8 to the specified file from the class. (The file will be closed after work)"""
     if not file:
         file = open(f'{extinf.author}.m3u8', 'w', encoding='utf-8')
     elif isinstance(file, str):
         file = open(file, 'w', encoding='utf-8')
     with file:
-        file.write(data_m3u8)
+        file.write('\n'.join(ip[1] for ip in extinf.data) if only_ip else str(extinf))
     return file.name
 
 
 class Parse:
-    __slots__ = '__resp_str',
+    __slots__ = ('__resp_str',)
 
     def __init__(self, resp: HTTPResponse) -> typing.NoReturn:
         self.__resp_str = resp_to_str(resp)

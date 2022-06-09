@@ -31,12 +31,12 @@ class SupportsBool(typing.Protocol):
         ...
 
 
-UdpxyaddrQuery = typing.TypeVar('UdpxyaddrQuery', typing.Union[str, SupportsStr], typing.Union[bytes, bytearray])
-ResponseOrSupportsStr = typing.Union[HTTPResponse, typing.AnyStr, SupportsStr]
+UdpxyaddrQuery = typing.TypeVar('UdpxyaddrQuery', str | SupportsStr, bytes | bytearray)
+ResponseOrSupportsStr = HTTPResponse | typing.AnyStr | SupportsStr
 ListOfStr = list[str]
-ExtinfData = typing.TypeVar('ExtinfData', list[tuple[str, str]], str)
+ExtinfData = typing.TypeVar('ExtinfData', list[(str, str)], str)
 
-ExtinfFormatInfDict = dict[typing.Union[str, int], typing.Any]
+ExtinfFormatInfDict = dict[str | int, typing.Any]
 ExtinfFormat = tuple[str, ExtinfFormatInfDict]
 OneChannel = tuple[ExtinfFormat, str]
 

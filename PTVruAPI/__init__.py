@@ -1,4 +1,6 @@
-from threading import Thread
+from __future__ import annotations
+
+from multiprocessing.pool import ThreadPool
 from time import sleep
 
 from PTVruAPI.ExtinfParse import *
@@ -7,7 +9,7 @@ from PTVruAPI.Types import *
 from PTVruAPI.static import parse_extinf_format
 
 __all__ = (
-    'ProxyTVRobot', 'ProxyTVRobotThreading',
+    'ProxyTVRobot', 'ProxyTVRobotThreading', 'run_cli',
     'Extinf', 'Srch', 'SearchEngine',
     'save_extinf', 'parse_extinf_format',
     'Proxy'
@@ -19,16 +21,18 @@ SearchEngine = Srch()
 class ProxyTVRobot:
     """A class describing a parser robot. Designed for inheritance."""
 
-    __slots__ = 'end_extinf', 'plist', 'PLIST_LEN', 'search_engine'
+    __slots__ = ('end_extinf', 'plist', 'PLIST_LEN', 'search_engine')
 
     def __init__(self, forever: bool = True, cooldown: typing.SupportsFloat = 0., search: Srch = None,
-                 except_types: typing.Union[typing.Iterable[BaseException], BaseException] = (Exception,)):
+                 except_types=(Exception,)):
         """Runs the order of actions, if forever is true then it does it forever."""
+        if not isinstance(cooldown, float):
+            cooldown = float(cooldown)
         self.search_engine = search if search else SearchEngine
-        self.__post_init__()
+        self.post_init()
         if isinstance(except_types, typing.Iterable):
             if not isinstance(except_types, tuple):
-                except_types = tuple()
+                except_types = (*except_types,)
         elif issubclass(except_types, BaseException):
             except_types = except_types,
         no_keyboard_interrupt_except = KeyboardInterrupt not in except_types
@@ -49,7 +53,7 @@ class ProxyTVRobot:
             except KeyboardInterrupt:
                 return
 
-    def __post_init__(self):
+    def post_init(self):
         """Execute after initialization."""
         pass
 
@@ -88,7 +92,7 @@ class ProxyTVRobot:
 
 class ProxyTVRobotThreading(ProxyTVRobot):
     """An example of implementing your own robot, with multithreading"""
-    __slots__ = 'end_extinf', 'pl_i'
+    __slots__ = ('end_extinf', 'pl_i')
 
     def search_pl(self, pl_name: str):
         """Method for adding a playlist to a shared Extinf object in multi-threaded mode"""
@@ -103,13 +107,9 @@ class ProxyTVRobotThreading(ProxyTVRobot):
         self.pl_i = 1
 
     def during(self):
-        """Creates streams to search for each playlist."""
-        threads = ()
-        for pl_name in self.plist:
-            threads += Thread(target=self.search_pl, args=(pl_name,)),
-            threads[-1].start()
-        for th in threads:
-            th.join()
+        """Creates threads to search for each playlist."""
+        with ThreadPool() as pool:
+            pool.map(self.search_pl, self.plist)
 
     @staticmethod
     def sort_key(extinf: OneChannel):
@@ -119,6 +119,3 @@ class ProxyTVRobotThreading(ProxyTVRobot):
         """Sort by self.sort_key function and save."""
         self.end_extinf.data.sort(key=self.sort_key)
         super().on_end()
-
-
-ProxyTVRobot()

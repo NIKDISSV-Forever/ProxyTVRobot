@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import re
 
-from PTVruAPI.Types import *
+from .Types import *
 
 __all__ = 'RegularExpressions', 'clear_html', 'resp_to_str', 'parse_extinf_format'
 
@@ -16,7 +18,7 @@ class RegularExpressions:
 
 
 def clear_html(text: typing.Any) -> str:
-    return RegularExpressions.HTML_TEG_RE.sub('', RegularExpressions.HTML_BR_RE.sub('\n', resp_to_str(text)))
+    return RegularExpressions.HTML_TEG_RE.sub('', RegularExpressions.HTML_BR_RE.sub('\n', resp_to_str(text))).strip()
 
 
 def resp_to_str(resp: ResponseOrSupportsStr) -> str:
@@ -26,7 +28,7 @@ def resp_to_str(resp: ResponseOrSupportsStr) -> str:
                         else (str(resp)))))
 
 
-def parse_extinf_format(extinf_line: typing.Union[str, OneChannel]) -> ExtinfFormat:
+def parse_extinf_format(extinf_line: str | OneChannel) -> ExtinfFormat:
     if isinstance(extinf_line, tuple):
         return extinf_line
     if extinf_line[:8].upper() == '#EXTINF:':
