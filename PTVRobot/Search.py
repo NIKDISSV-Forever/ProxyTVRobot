@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from urllib.request import urlopen, Request
+from urllib.request import Request, urlopen
 
-from PTVruAPI.ExtinfParse import *
-from PTVruAPI.Types import *
+from PTVRobot.ExtinfParse import *
+from PTVRobot.Types import *
 
 __all__ = 'Srch', 'Proxy'
 
@@ -36,10 +36,10 @@ class Srch:
         return clear_html(repr(self('?')))
 
     def providers(self) -> ListOfStr:
-        return Parse(self.__udpxyaddr('provider')).providers()
+        return self('provider').providers()
 
     def plist(self) -> ListOfStr:
-        return Parse(self.__udpxyaddr('plist')).plist()
+        return self('plist').plist()
 
     def ch(self, query: SupportsStr) -> Extinf | OneChannel:
         query = str(query)
@@ -52,10 +52,17 @@ class Srch:
         return Extinf(extinf[_query]) if tvch_id else extinf
 
     def pl(self, query: SupportsStr) -> Extinf:
-        return Parse(self.__udpxyaddr(self.__mkq('pl', query))).extinf()
+        return self(self.__mkq('pl', query)).extinf()
 
     def gr(self, query: SupportsStr) -> Extinf:
-        return Parse(self.__udpxyaddr(self.__mkq('gr', query))).extinf()
+        return self(self.__mkq('gr', query)).extinf()
+
+    def collect_all(self) -> Extinf:
+        """Get all available playlists (self.plist()) and collect all channels from the playlist into one Extinf"""
+        container = Extinf()
+        for name in self.plist():
+            container += self.pl(name)
+        return container
 
     @staticmethod
     def __mkq(wt: SupportsStr, query: SupportsStr) -> str:
@@ -67,8 +74,8 @@ class Srch:
         protocol = proxy.protocol or 'https'
         __request = Request(
             f'{protocol}://proxytv.ru/iptv/php/srch.php',
-            b'udpxyaddr=' + (__srch if isinstance(__srch, (bytes, bytearray)) else (
-                __srch.encode('UTF-8') if isinstance(__srch, str) else str(__srch).encode('utf-8'))),
+            b'udpxyaddr=%b' % (__srch if isinstance(__srch, (bytes, bytearray)) else (
+                __srch.encode() if isinstance(__srch, str) else str(__srch).encode())),
             {'Referer': 'https://proxytv.ru/index.php'}, method='POST')
         if self.proxy:
             __request.set_proxy(proxy.host, protocol)

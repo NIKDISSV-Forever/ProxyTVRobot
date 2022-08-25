@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+import sys
 from multiprocessing.pool import ThreadPool
 from time import sleep
 
-from PTVruAPI.ExtinfParse import *
-from PTVruAPI.Search import *
-from PTVruAPI.Types import *
-from PTVruAPI.static import parse_extinf_format
+from PTVRobot.ExtinfParse import *
+from PTVRobot.Search import *
+from PTVRobot.Types import *
+from PTVRobot.static import parse_extinf_format
 
 __all__ = (
-    'ProxyTVRobot', 'ProxyTVRobotThreading', 'run_cli',
+    'ProxyTVRobot', 'ProxyTVRobotThreading',
     'Extinf', 'Srch', 'SearchEngine',
     'save_extinf', 'parse_extinf_format',
     'Proxy'
@@ -21,11 +22,12 @@ SearchEngine = Srch()
 class ProxyTVRobot:
     """A class describing a parser robot. Designed for inheritance."""
 
-    __slots__ = ('end_extinf', 'plist', 'PLIST_LEN', 'search_engine')
+    __slots__ = ('end_extinf', 'plist', 'PLIST_LEN', 'search_engine', 'pl_number', 'output')
 
-    def __init__(self, forever: bool = True, cooldown: typing.SupportsFloat = 0., search: Srch = None,
-                 except_types=(Exception,)):
+    def __init__(self, forever: bool = True, cooldown: typing.SupportsFloat = 0.,
+                 search: Srch = None, output=None, except_types=(Exception,)):
         """Runs the order of actions, if forever is true then it does it forever."""
+        self.output = output or sys.stdout
         if not isinstance(cooldown, float):
             cooldown = float(cooldown)
         self.search_engine = search if search else SearchEngine
@@ -65,21 +67,26 @@ class ProxyTVRobot:
     # noinspection PyAttributeOutsideInit
     def on_start(self):
         """Initial actions."""
-        self.end_extinf = Extinf()
         self.plist = self.search_engine.plist()
         self.PLIST_LEN = len(self.plist)
+        self.end_extinf = Extinf()
+        self.pl_number = 1
+
+    def search_pl(self, pl_name: str):
+        pl = self.search_engine.pl(pl_name)
+        print(f'Pl: {pl_name} ({self.pl_number}/{self.PLIST_LEN}) Channels: {len(pl)}')
+        self.end_extinf += pl
+        self.pl_number += 1
 
     def during(self):
         """Actions in the middle of the process."""
-        plist_len = self.PLIST_LEN
-        for i, pl_name in enumerate(self.plist, 1):
-            pl = self.search_engine.pl(pl_name)
-            print(f'Pl: {pl_name} ({i}/{plist_len}) Channels: {len(pl)}')
-            self.end_extinf += pl
+        for pl_name in self.plist:
+            self.search_pl(pl_name)
 
     def on_end(self):
         """Completion Actions"""
-        self.upload(save_extinf(self.end_extinf, 'all-channels.m3u8'))
+        self.end_extinf.data = sorted(self.end_extinf.data)
+        self.upload(save_extinf(self.end_extinf, self.output))
 
     def upload(self, fn: str):
         """Used to upload files to a remote host, used in on_end."""
@@ -92,19 +99,7 @@ class ProxyTVRobot:
 
 class ProxyTVRobotThreading(ProxyTVRobot):
     """An example of implementing your own robot, with multithreading"""
-    __slots__ = ('end_extinf', 'pl_i')
-
-    def search_pl(self, pl_name: str):
-        """Method for adding a playlist to a shared Extinf object in multi-threaded mode"""
-        pl = self.search_engine.pl(pl_name)
-        self.end_extinf += pl
-        print(f'Pl: {pl_name} ({self.pl_i}/{self.PLIST_LEN}) Channels: {len(pl)}')
-        self.pl_i += 1
-
-    def on_start(self):
-        super().on_start()
-        # noinspection PyAttributeOutsideInit
-        self.pl_i = 1
+    __slots__ = ('end_extinf', 'pl_number')
 
     def during(self):
         """Creates threads to search for each playlist."""
@@ -113,7 +108,7 @@ class ProxyTVRobotThreading(ProxyTVRobot):
 
     @staticmethod
     def sort_key(extinf: OneChannel):
-        return extinf[0][1].get('group-title', '')
+        return extinf.info.get('group-title', '')
 
     def on_end(self):
         """Sort by self.sort_key function and save."""

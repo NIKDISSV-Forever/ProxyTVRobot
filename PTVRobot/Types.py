@@ -9,7 +9,7 @@ __all__ = (
     'ResponseOrSupportsStr', 'ListOfStr',
     'SupportsStr', 'SupportsBool',
     'UdpxyaddrQuery', 'ExtinfData',
-    'ExtinfFormatInfDict', 'ExtinfFormat', 'OneChannel',
+    'ExtinfFormatInfDict',
 )
 
 
@@ -37,7 +37,5 @@ ListOfStr = list[str]
 ExtinfData = typing.TypeVar('ExtinfData', list[(str, str)], str)
 
 ExtinfFormatInfDict = dict[str | int, typing.Any]
-ExtinfFormat = tuple[str, ExtinfFormatInfDict]
-OneChannel = tuple[ExtinfFormat, str]
 
 BaseExceptionType = type(BaseException)

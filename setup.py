@@ -6,7 +6,7 @@ with open('README.md', encoding='UTF-8') as f:
     long_description = f.read()
 
 setuptools.setup(
-    name="PTVruAPI",
+    name="PTVRobot",
 
     version="1.0.0",
 
