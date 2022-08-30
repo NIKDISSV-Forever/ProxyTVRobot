@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from multiprocessing import cpu_count
+from multiprocessing.pool import ThreadPool
 from urllib.request import Request, urlopen
 
 from PTVRobot.ExtinfParse import *
@@ -57,8 +59,16 @@ class Srch:
     def gr(self, query: SupportsStr) -> Extinf:
         return self(self.__mkq('gr', query)).extinf()
 
-    def collect_all(self) -> Extinf:
+    def collect_all(self, threads: int | bool | None = None) -> Extinf:
         """Get all available playlists (self.plist()) and collect all channels from the playlist into one Extinf"""
+
+        if isinstance(threads, bool):
+            threads = cpu_count() if threads else 1
+        if threads is None or (threads := int(threads)) > 1:
+            with ThreadPool(threads) as pool:
+                result = pool.map(self.pl, self.plist())
+            return sum(result, Extinf())
+
         container = Extinf()
         for name in self.plist():
             container += self.pl(name)

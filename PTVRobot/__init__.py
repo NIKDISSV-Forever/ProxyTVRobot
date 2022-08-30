@@ -103,3 +103,6 @@ class ProxyTVRobotThreading(ProxyTVRobot):
         """Creates threads to search for each playlist."""
         with ThreadPool() as pool:
             pool.map(self.search_pl, self.plist)
+
+
+print(SearchEngine.collect_all())
