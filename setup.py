@@ -9,7 +9,7 @@ with open('README.md', encoding='UTF-8') as f:
 setuptools.setup(
     name="PTVRobot",
 
-    version="1.2.1",
+    version="1.2.2",
 
     author="Nikita (NIKDISSV)",
     author_email="nikdissv@proton.me",
