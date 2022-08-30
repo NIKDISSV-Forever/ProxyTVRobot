@@ -19,7 +19,7 @@ class SupportsStr(typing.Protocol):
 
     @abstractmethod
     def __str__(self) -> str:
-        ...
+        pass
 
 
 @typing.runtime_checkable
@@ -28,14 +28,11 @@ class SupportsBool(typing.Protocol):
 
     @abstractmethod
     def __bool__(self) -> bool:
-        ...
+        pass
 
 
 UdpxyaddrQuery = typing.TypeVar('UdpxyaddrQuery', str | SupportsStr, bytes | bytearray)
 ResponseOrSupportsStr = HTTPResponse | typing.AnyStr | SupportsStr
 ListOfStr = list[str]
 ExtinfData = typing.TypeVar('ExtinfData', list[(str, str)], str)
-
 ExtinfFormatInfDict = dict[str | int, typing.Any]
-
-BaseExceptionType = type(BaseException)

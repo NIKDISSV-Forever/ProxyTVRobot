@@ -19,7 +19,7 @@ def repl_double_quotes(v) -> str:
             return _repr
         elif r0 == "'":
             return f'"{_repr[1:-1]}"'
-    return _repr
+    return f'"{_repr}"'
 
 
 @dataclass
@@ -29,15 +29,15 @@ class OneChannel:
     info: dict = None
 
     def __lt__(self, other):
-        tvch_id = self.info.get('tvch-id')
-        other_tvch_id = other.info.get('tvch-id')
+        tvch_id = self.info.get('tvch-id', '')
+        other_tvch_id = other.info.get('tvch-id', '')
         if tvch_id and other_tvch_id:
             return tvch_id < other_tvch_id
         return self.name < other.name
 
     def __str__(self):
-        return f"""#EXTINF:{' '.join(f'{(f"{i}=" if isinstance(i, str) else "")}{repl_double_quotes(v)}' for i, v in
-                                     self.info.items())},{self.name}\n{self.address}"""
+        return f"""#EXTINF:{' '.join(f'{(f"{i}={repl_double_quotes(v)}" if isinstance(i, str) else v)}'
+                                     for i, v in self.info.items())},{self.name}\n{self.address}"""
 
 
 class Extinf:
@@ -54,8 +54,15 @@ class Extinf:
         self.data: list[OneChannel] = [(one_channel
                                         if isinstance(one_channel, OneChannel)
                                         else OneChannel(one_channel[1], *parse_extinf_format(one_channel[0])))
-                                       for one_channel in data] or []
+                                       for one_channel in data]
         self.author = author
+
+    @staticmethod
+    def cmp_ch_info(ch_info: Mapping, need_info: Mapping) -> bool:
+        for k, v in need_info.items():
+            if k not in ch_info or ch_info[k] != v:
+                return False
+        return True
 
     def __getitem__(self,
                     find: SupportsInt | SupportsStr | ExtinfFormatInfDict | typing.Callable[
@@ -69,13 +76,10 @@ class Extinf:
         | With matching information (For example self[{'tvch-id': '7171'}])
             | self[lambda inf: inf[0][1]['tvch-id'] == '7171']
         """
-        if isinstance(find, (dict, Mapping)):
+        if isinstance(find, Mapping):
             result = Extinf()
             for one_channel in self:
-                for k, v in find.items():
-                    if k not in one_channel.info or one_channel.info[k] != v:
-                        break
-                else:
+                if self.cmp_ch_info(one_channel.info, find):
                     result.data.append(one_channel)
             return result
         elif callable(find):

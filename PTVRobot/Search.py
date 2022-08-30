@@ -49,7 +49,7 @@ class Srch:
             query, tvch_id = tvch_id[0]
         extinf = Parse(self.__udpxyaddr(self.__mkq('ch', query))).extinf()
         # noinspection PyUnboundLocalVariable
-        return Extinf(extinf[_query]) if tvch_id else extinf
+        return extinf[_query] if tvch_id else extinf
 
     def pl(self, query: SupportsStr) -> Extinf:
         return self(self.__mkq('pl', query)).extinf()
