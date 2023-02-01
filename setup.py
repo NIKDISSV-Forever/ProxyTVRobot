@@ -5,11 +5,10 @@ import setuptools
 with open('README.md', encoding='UTF-8') as f:
     long_description = f.read()
 
-
 setuptools.setup(
-    name="PTVRobot",
+    name="proxytv",
 
-    version="1.2.2",
+    version="2.0.0",
 
     author="Nikita (NIKDISSV)",
     author_email="nikdissv@proton.me",
@@ -51,5 +50,5 @@ setuptools.setup(
     ],
 
     python_requires='>=3.8',
-    keywords=['ProxyBot', 'IPTV', 'proxytv.ru', 'TV', 'free', 'open']
+    keywords=['ProxyBot', 'IPTV', 'proxytv.ru', 'TV', 'free']
 )

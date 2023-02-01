@@ -36,33 +36,55 @@ options:
 # Код
 
 ```python
+from __future__ import annotations
+
+import sys
+import time
 from multiprocessing.pool import ThreadPool
+from typing import Iterable, SupportsFloat
 
-from PTVRobot.ExtinfParse import *
-from PTVRobot.Search import *
-from PTVRobot.Types import *
-from PTVRobot.static import *
-
-__all__ = (
-    'ProxyTVRobot', 'ProxyTVRobotThreading',
-    'Extinf', 'Srch', 'SearchEngine', 'OneChannel',
-    'save_extinf', 'parse_extinf_format',
-    'Proxy'
-)
-
-SearchEngine = Srch()
+from .extinf import *
+from .search import *
+from .static import *
 
 
-class ProxyTVRobot:
+class Robot:
     """A class describing a parser robot. Designed for inheritance."""
 
     __slots__ = ('end_extinf', 'plist', 'PLIST_LEN', 'search_engine', 'pl_number', 'output')
     sort_key = None  # sort channels
 
-    def __init__(self, forever: bool = True, cooldown: typing.SupportsFloat = 0.,
+    def __init__(self, forever: bool = True, cooldown: SupportsFloat = 0.,
                  search: Srch = None, output=None, except_types=(Exception,)):
         """Runs the order of actions, if forever is true then it does it forever."""
-        ...
+        self.output = output or sys.stdout
+        if not isinstance(cooldown, float):
+            cooldown = float(cooldown)
+        self.search_engine = search if search else SearchEngine
+        self.post_init()
+        if isinstance(except_types, Iterable):
+            if not isinstance(except_types, tuple):
+                except_types = (*except_types,)
+        elif issubclass(except_types, BaseException):
+            except_types = except_types,
+        no_keyboard_interrupt_except = KeyboardInterrupt not in except_types
+        if no_keyboard_interrupt_except:
+            except_types += KeyboardInterrupt,
+        if forever:
+            while True:
+                try:
+                    self.loop()
+                    time.sleep(cooldown)
+                except except_types as e:
+                    if no_keyboard_interrupt_except and isinstance(e, KeyboardInterrupt):
+                        return
+                    print(f'Error: {e}')
+        try:
+            self.loop()
+        except except_types as e:
+            if no_keyboard_interrupt_except and isinstance(e, KeyboardInterrupt):
+                return
+            print(f'Error: {e}')
 
     def post_init(self):
         """Execute after initialization."""
@@ -103,7 +125,7 @@ class ProxyTVRobot:
         pass
 
 
-class ProxyTVRobotThreading(ProxyTVRobot):
+class RobotThreading(Robot):
     """An example of implementing your own robot, with multithreading"""
     __slots__ = ('end_extinf', 'pl_number')
 
@@ -111,7 +133,6 @@ class ProxyTVRobotThreading(ProxyTVRobot):
         """Creates threads to search for each playlist."""
         with ThreadPool() as pool:
             pool.map(self.search_pl, self.plist)
-
 ```
 
 Классы для наследования, при написании более сложных роботов.
@@ -139,8 +160,8 @@ http://93.158.224.2:4022/udp/239.3.100.85:4321
 
 3. Чтобы проверить на присутствие подстроки в строке, фильтр должен начинаться с <kbd>#</kbd>
 
-4. Или любое регулярное выражение (при использовании <kbd>#</kbd>) регулярное выражение не применяется (строка
-   экранируется), если строка начинается с <kbd>:</kbd>, регулярное выражение по прежнему проверяется, но уже на IP
+4. Или любое регулярное выражение (при использовании <kbd>#</kbd> регулярное выражение не применяется, строка
+   экранируется), если строка начинается с <kbd>:</kbd>, регулярное выражение по-прежнему проверяется, но уже на IP
 5. Все филтры не чувствительны к регистру (``re.IGNORECASE``)
 
 ---
@@ -205,7 +226,7 @@ http://93.158.224.2:4022/udp/239.3.100.85:4321
 
 ``Тоже что и -q "ch:HD" аргумет``
 
-#EXTINF:-1 tvch-id="46046" group-title="ИНФ/РАЗВЛЕКАТЕЛЬНЫЕ",РОССИЯ 1 <kbd>HD<./kbd>-46046
+#EXTINF:-1 tvch-id="46046" group-title="ИНФ/РАЗВЛЕКАТЕЛЬНЫЕ",РОССИЯ 1 <kbd>HD</kbd>-46046
 
 ---
 **Пример составления нужного плейлиста:**
