@@ -1,13 +1,13 @@
-# PTVRobot
+# proxytv
 
 Robot for https://proxytv.ru/ (ProxyBot)
 
-> pip install [PTVRobot](https://pypi.org/project/PTVRobot)
+> pip install [proxytv](https://pypi.org/project/proxytv)
 
-> python -m PTVRobot --help
+> python -m proxytv --help
 
 ```
-usage: PTVRobot [-h] [-f] [-t] [-q QUERY] [-cd COOLDOWN] [-x PROXY] [-chf CHANNEL_FILTERS] [-pl [PL ...]] [-o OUTPUT]
+usage: proxytv [-h] [-f] [-t] [-q QUERY] [-cd COOLDOWN] [-x PROXY] [-chf CHANNEL_FILTERS] [-pl [PL ...]] [-o OUTPUT]
 
 options:
   -h, --help            show this help message and exit
@@ -36,13 +36,6 @@ options:
 # Код
 
 ```python
-from __future__ import annotations
-
-import sys
-import time
-from multiprocessing.pool import ThreadPool
-from typing import Iterable, SupportsFloat
-
 from .extinf import *
 from .search import *
 from .static import *
@@ -57,34 +50,7 @@ class Robot:
     def __init__(self, forever: bool = True, cooldown: SupportsFloat = 0.,
                  search: Srch = None, output=None, except_types=(Exception,)):
         """Runs the order of actions, if forever is true then it does it forever."""
-        self.output = output or sys.stdout
-        if not isinstance(cooldown, float):
-            cooldown = float(cooldown)
-        self.search_engine = search if search else SearchEngine
-        self.post_init()
-        if isinstance(except_types, Iterable):
-            if not isinstance(except_types, tuple):
-                except_types = (*except_types,)
-        elif issubclass(except_types, BaseException):
-            except_types = except_types,
-        no_keyboard_interrupt_except = KeyboardInterrupt not in except_types
-        if no_keyboard_interrupt_except:
-            except_types += KeyboardInterrupt,
-        if forever:
-            while True:
-                try:
-                    self.loop()
-                    time.sleep(cooldown)
-                except except_types as e:
-                    if no_keyboard_interrupt_except and isinstance(e, KeyboardInterrupt):
-                        return
-                    print(f'Error: {e}')
-        try:
-            self.loop()
-        except except_types as e:
-            if no_keyboard_interrupt_except and isinstance(e, KeyboardInterrupt):
-                return
-            print(f'Error: {e}')
+        ...
 
     def post_init(self):
         """Execute after initialization."""
@@ -139,13 +105,13 @@ class RobotThreading(Robot):
 
 # Фильтры
 
-Аргумент --channel-filters принимает файл с фильтрами в формате регулярного выражения,
+Аргумент `--channel-filters` принимает файл с фильтрами в формате регулярного выражения,
 применяемого к выходному m3u формату
 
 Существуют некоторое упрощения для более быстрого составления файла фильтров.
 Напомню, выходной m3u формат выглядит примерно так:
 
-```m3u8
+```m3u
 #EXTINF:-1 tvch-id="40025" group-title="ДЕТСКИЕ",DISNEY CHANNEL-40025
 http://93.158.224.2:4022/udp/239.3.100.85:4321
 ```
@@ -242,7 +208,7 @@ filters.txt
 #Россия 24
 ```
 
-> python -m PTVRobot -chf filters.txt -f -cd 120 -o tv.m3u8
+> python -m proxytv -chf filters.txt -f -cd 120 -o tv.m3u8
 
 Каждые 2 минуты будет обновляться файл tv.m3u8 с перечисленными выше каналами.
 

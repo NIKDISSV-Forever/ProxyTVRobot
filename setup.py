@@ -6,18 +6,18 @@ with open('README.md', encoding='UTF-8') as f:
     long_description = f.read()
 
 setuptools.setup(
-    name="proxytv",
+    name='proxytv',
 
-    version="2.0.0",
+    version='1.0.0',
 
-    author="Nikita (NIKDISSV)",
-    author_email="nikdissv@proton.me",
+    author='Nikita (NIKDISSV)',
+    author_email='nikdissv@proton.me',
 
-    description="proxytv.ru IPTV Channels Parser and Robot (Like ProxyBot)",
+    description='proxytv.ru IPTV Channels Parser and Robot (Like ProxyBot)',
     long_description=long_description,
-    long_description_content_type="text/markdown",
+    long_description_content_type='text/markdown',
 
-    url="https://github.com/NIKDISSV-Forever/ProxyTVRobot",
+    url='https://github.com/NIKDISSV-Forever/ProxyTVRobot',
 
     packages=setuptools.find_packages(),
     license='MIT',
