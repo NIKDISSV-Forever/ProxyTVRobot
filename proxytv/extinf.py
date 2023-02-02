@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from copy import copy
 from dataclasses import dataclass
+from http.client import HTTPResponse
 from os.path import abspath
 from typing import Callable, Iterable, Iterator, Mapping, SupportsInt, TextIO, TypeVar
 
-from .static import *
-from .static import _clear_html
-from .types import *
+from proxytv._static import *
 
-__all__ = ('OneChannel', 'Extinf', 'save_extinf', 'Parse')
+__all__ = ('OneChannel', 'Extinf', 'Parse', 'save_extinf')
 
 T1 = TypeVar('T1')
 T2 = TypeVar('T2')
@@ -18,11 +17,8 @@ T2 = TypeVar('T2')
 def _repl_double_quotes(v) -> str:
     _repr = repr(v)
     r0 = _repr[0]
-    if r0 == _repr[-1]:
-        if r0 == '"':
-            return _repr
-        elif r0 == "'":
-            return f'"{_repr[1:-1]}"'
+    if r0 == _repr[-1] and r0 in "'\"":
+        _repr = _repr.removeprefix('"').removeprefix('"').removesuffix('"').removesuffix("'")
     return f'"{_repr}"'
 
 
@@ -54,12 +50,14 @@ class Extinf:
 
     __slots__ = ('data', '_author')
 
-    def __init__(self, data: ExtinfData | list[OneChannel] = None, author: str = 'NIKDISSV') -> None:
+    def __init__(self, data: list[tuple[str, str] | OneChannel] | str = None, author: str = 'NIKDISSV') -> None:
         """Takes a list of sources and author. Stores them in an instance of the class."""
-        if isinstance(data, (tuple, set)):
+        if not data:
+            data = []
+        if isinstance(data, (str, HTTPResponse)):
+            data = RegularExpressions.EXTINF_FAST.findall(clear_html(data))
+        elif isinstance(data, Iterable):
             data = [*data]
-        if not isinstance(data, list):
-            data = RegularExpressions.EXTINF_RE.findall(_clear_html(data))
         self.data: list[OneChannel] = [(one_channel
                                         if isinstance(one_channel, OneChannel)
                                         else OneChannel(one_channel[1], *parse_extinf_format(one_channel[0])))
@@ -82,7 +80,7 @@ class Extinf:
         return True
 
     def __getitem__(self,
-                    find: str | OneChannel | SupportsInt | ExtinfFormatInfDict | Callable[[OneChannel], bool]
+                    find: str | OneChannel | SupportsInt | dict[str | int, Any] | Callable[[OneChannel], bool]
                     ) -> Extinf | OneChannel:
         """
         For example:
@@ -161,11 +159,11 @@ class Parse:
     def extinf(self) -> Extinf:
         return Extinf(self.__resp_str)
 
-    def plist(self) -> ListOfStr:
-        return RegularExpressions.PLIST_RE.findall(self.__resp_str)
+    def plist(self) -> list[str]:
+        return RegularExpressions.PLIST.findall(self.__resp_str)
 
-    def providers(self) -> ListOfStr:
-        return RegularExpressions.PROVIDER_RE.findall(self.__resp_str)
+    def providers(self) -> list[str]:
+        return RegularExpressions.PROVIDER.findall(self.__resp_str)
 
 
 def save_extinf(extinf: Extinf = Extinf(), file: TextIO | str = None, only_ip: bool = False) -> str:
@@ -182,17 +180,10 @@ def save_extinf(extinf: Extinf = Extinf(), file: TextIO | str = None, only_ip: b
 
 
 def parse_extinf_format(extinf_line: str):
-    if extinf_line.casefold().startswith('#extinf:'):
-        extinf_line = extinf_line[8:]
-    inf, name = extinf_line.split(',', 1)
-    result = {}
-    n, d = inf.split(' ', 1)
-    result[0] = n
-    d = [i for i in d.split('"') if i]
-    for i in range(0, len(d), 2):
-        k = d[i]
-        v = d[i + 1]
-        if v.isdigit():
-            v = int(v)
-        result[k.removesuffix('=').strip()] = v
+    duration, attrs, name = RegularExpressions.EXTINF_DETAILS.search(extinf_line).groups()
+    result = {0: int(duration)}
+    for attr, value in RegularExpressions.EXTINF_ATTRS.findall(attrs):
+        if value.isdigit():
+            value = int(value)
+        result[attr] = value
     return name, result

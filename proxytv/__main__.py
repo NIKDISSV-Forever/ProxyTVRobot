@@ -17,15 +17,15 @@ def main():
     arg_parser = argparse.ArgumentParser('proxytv')
     arg_parser.add_argument('-f', '--forever', action='store_true', help='Run the script again every cooldown seconds.')
     arg_parser.add_argument('-t', '--threading', action='store_true',
-                            help='Send and parse the request for each playlist in a separate thread. (Default: True)')
+                            help='Send and parse the request for each playlist in a separate thread. (default: True)')
     arg_parser.add_argument('-q', '--query',
                             help='Send only one request with the specified text. For example: "ch: HD" or "pl: aist"')
-    arg_parser.add_argument('-cd', '--cooldown', type=float, default=1., help='Cooldown in seconds. (Default: 1)')
+    arg_parser.add_argument('-cd', '--cooldown', type=float, default=30., help='Cooldown in seconds. (default: 30)')
     arg_parser.add_argument('-x', '--proxy', help='Proxy <protocol>://<ip>')
     arg_parser.add_argument('-chf', '--channel-filters', type=_names_list,
                             help='Filters for received channels')
     arg_parser.add_argument('-pl', nargs='*', help='Playlist name(s)')
-    arg_parser.add_argument('-o', '--output', help='Output .m3u(8) file. (Default: <stdout>)')
+    arg_parser.add_argument('-o', '--output', help='Output .m3u(8) file. (default: <stdout>)')
     args: argparse.Namespace = arg_parser.parse_args()
 
     if args.threading:
@@ -73,7 +73,7 @@ def main():
                             return True
                     return False
 
-    Robot(args.forever, args.cooldown, make_search(args.proxy), args.output)
+    Robot(args.forever, args.cooldown, make_search(args.proxy), args.output).run()
 
 
 if __name__ == '__main__':

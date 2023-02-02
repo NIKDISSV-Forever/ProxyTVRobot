@@ -5,9 +5,8 @@ from multiprocessing import cpu_count
 from multiprocessing.pool import ThreadPool
 from urllib.request import Request, urlopen
 
+from proxytv._static import *
 from proxytv.extinf import *
-from proxytv.static import RegularExpressions, _clear_html, _resp_to_str
-from proxytv.types import *
 
 __all__ = ('Srch', 'Proxy', 'SearchEngine', 'make_search')
 
@@ -36,12 +35,12 @@ class Srch:
         return Parse(self._srch(query))
 
     def help(self) -> str:
-        return _clear_html(repr(self('?')))
+        return clear_html(repr(self('?')))
 
-    def providers(self) -> ListOfStr:
+    def providers(self) -> list[str]:
         return self('provider').providers()
 
-    def plist(self) -> ListOfStr:
+    def plist(self) -> list[str]:
         return self('plist').plist()
 
     def ch(self, query: str) -> Extinf | OneChannel:
@@ -77,14 +76,13 @@ class Srch:
     def _srch(self, udpxyaddr) -> str:
         proxy = self.proxy
         protocol = proxy.protocol or 'https'
-        __request = Request(
-            f'{protocol}://proxytv.ru/iptv/php/srch.php',
-            b'udpxyaddr=%b' % self._get_bytes(udpxyaddr),
-            {'Referer': 'https://proxytv.ru/index.php'}, method='POST')
-        if self.proxy:
-            __request.set_proxy(proxy.host, protocol)
-        with urlopen(__request) as resp:
-            return _resp_to_str(resp.read())
+        request = Request(f'{protocol}://proxytv.ru/iptv/php/srch.php',
+                          b'udpxyaddr=%b' % self._get_bytes(udpxyaddr),
+                          HEADERS, method='POST')
+        if proxy:
+            request.set_proxy(proxy.host, protocol)
+        with urlopen(request) as resp:
+            return resp_to_str(resp.read())
 
     @property
     def proxy(self) -> Proxy:
@@ -109,3 +107,4 @@ def make_search(proxy: str = None) -> Srch:
 
 
 SearchEngine = Srch()
+HEADERS = {'Referer': 'https://proxytv.ru/index.php', 'User-Agent': 'Mozilla/5.0'}
